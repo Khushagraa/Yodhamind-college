@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/shared/supabase-config.js"></script>
   <style>
     :root{
       --ink:#1a1625; --bg:#f5f3ee; --white:#fff;
@@ -375,15 +376,15 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const SB_URL = 'https://qbrdfnhksqoaagstvdzk.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFicmRmbmhrc3FvYWFnc3R2ZHprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODc5NDcsImV4cCI6MjA4ODM2Mzk0N30.GHhXkO63AMUrRSUHW9GtjD27AjBDZ1PIsfeBWRgNqgQ';
-const sb = window.supabase.createClient(SB_URL, SB_KEY);
+const { url: SB_URL, key: SB_KEY } = window.YM_SUPABASE_CONFIG || {};
+const sb = (SB_URL && SB_KEY) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 
 let me = null, profile = null;
 let selectedMood = null, selectedMoodFull = null;
 
 // ── Auth Guard ──────────────────────────────────────────────
 (async () => {
+  if (!sb) return go('student_auth.html');
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return go('student_auth.html');
   me = session.user;

@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/shared/supabase-config.js"></script>
 
     <!-- Shared data layer — must load before any inline script -->
     <script src="/shared/storage.js"></script>
@@ -919,14 +920,14 @@ body.auth-ready {
     <script>
     'use strict';
     // Supabase anon key; relies on RLS on the backend for access control.
-    const SB_URL = 'https://qbrdfnhksqoaagstvdzk.supabase.co';
-    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFicmRmbmhrc3FvYWFnc3R2ZHprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODc5NDcsImV4cCI6MjA4ODM2Mzk0N30.GHhXkO63AMUrRSUHW9GtjD27AjBDZ1PIsfeBWRgNqgQ';
-    const sb = window.supabase.createClient(SB_URL, SB_KEY);
+    const { url: SB_URL, key: SB_KEY } = window.YM_SUPABASE_CONFIG || {};
+    const sb = (SB_URL && SB_KEY) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 
     function go(u) { window.location.href = u; }
 
     (async () => {
         try {
+            if (!sb) return go('student_auth.html');
             const { data: { session } } = await sb.auth.getSession();
             if (!session) return go('student_auth.html');
             const { data: u } = await sb.from('users').select('role').eq('id', session.user.id).single();
