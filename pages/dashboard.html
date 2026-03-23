@@ -932,7 +932,7 @@ body.auth-ready {
             if (!session) return go('student_auth.html');
             const { data: u } = await sb.from('users').select('role').eq('id', session.user.id).single();
             if (!u || u.role !== 'student') {
-                showToast('Access is restricted to student accounts.');
+                showToast('Access is restricted to student accounts. Please use a student login or contact support if this seems incorrect.');
                 await sb.auth.signOut();
                 return setTimeout(() => go('student_auth.html'), 600);
             }

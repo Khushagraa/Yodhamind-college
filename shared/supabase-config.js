@@ -5,6 +5,9 @@ const DEFAULT_SUPABASE_CONFIG = {
 };
 const ENV_SUPABASE_CONFIG = window.__ENV_SUPABASE_CONFIG__ || window.YM_SUPABASE_CONFIG || {};
 window.YM_SUPABASE_CONFIG = Object.assign({}, DEFAULT_SUPABASE_CONFIG, ENV_SUPABASE_CONFIG);
+if (!ENV_SUPABASE_CONFIG.url || !ENV_SUPABASE_CONFIG.key) {
+  console.warn('[YM] Using bundled Supabase anon config. Override via window.__ENV_SUPABASE_CONFIG__ for environment-specific keys.');
+}
 
 // Feature flags to toggle UI behaviour without code edits.
 window.YM_FEATURE_FLAGS = Object.assign({ bookingsDisabled: true }, window.YM_FEATURE_FLAGS || {});
