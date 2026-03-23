@@ -932,9 +932,9 @@ body.auth-ready {
             if (!session) return go('student_auth.html');
             const { data: u } = await sb.from('users').select('role').eq('id', session.user.id).single();
             if (!u || u.role !== 'student') {
-                alert('Access is restricted to student accounts.');
+                showToast('Access is restricted to student accounts.');
                 await sb.auth.signOut();
-                return go('student_auth.html');
+                return setTimeout(() => go('student_auth.html'), 600);
             }
             document.body.classList.remove('auth-guard');
             document.body.classList.add('auth-ready');
