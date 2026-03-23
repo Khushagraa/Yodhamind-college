@@ -779,9 +779,10 @@
     /* ──────────────────────────────────────────
        STATE
     ────────────────────────────────────────── */
-    const FEATURE_FLAGS     = window.YM_FEATURE_FLAGS || {};
-    const BOOKINGS_DISABLED = FEATURE_FLAGS.bookingsDisabled ?? true;
-    const COMING_SOON_MSG   = 'Psychologist bookings are coming soon.';
+    const FEATURE_FLAGS       = window.YM_FEATURE_FLAGS || {};
+    const BOOKINGS_DISABLED   = Boolean(FEATURE_FLAGS.bookingsDisabled);
+    const COMING_SOON_MSG     = 'Psychologist bookings are coming soon';
+    const COMING_SOON_DETAIL  = 'We’re polishing the experience. Please check back shortly.';
     let activeFilter    = '';
     let bookingTarget   = null;   // psychologist object being booked
     let selectedDate    = null;
@@ -795,7 +796,7 @@
             <div class="coming-soon-card">
                 <div style="font-size:2rem;margin-bottom:10px;">⏳</div>
                 <h3>${COMING_SOON_MSG}</h3>
-                <p>We’re polishing the experience. Please check back shortly.</p>
+                <p>${COMING_SOON_DETAIL}</p>
             </div>
         `;
         const browse = document.getElementById('tabContentBrowse');
@@ -1122,8 +1123,8 @@
                 list.innerHTML = `
                     <div class="coming-soon-card">
                         <div style="font-size:2rem;margin-bottom:10px;">⏳</div>
-                        <h3>Bookings are paused</h3>
-                        <p>${COMING_SOON_MSG}</p>
+                        <h3>${COMING_SOON_MSG}</h3>
+                        <p>${COMING_SOON_DETAIL}</p>
                     </div>
                 `;
             }
