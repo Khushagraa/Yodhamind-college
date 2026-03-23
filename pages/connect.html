@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800&display=swap" rel="stylesheet">
 
     <script src="/shared/storage.js"></script>
+    <script src="/shared/supabase-config.js"></script>
 
     <style>
         :root {
@@ -778,7 +779,8 @@
     /* ──────────────────────────────────────────
        STATE
     ────────────────────────────────────────── */
-    const BOOKINGS_DISABLED = true;
+    const FEATURE_FLAGS     = window.YM_FEATURE_FLAGS || {};
+    const BOOKINGS_DISABLED = FEATURE_FLAGS.bookingsDisabled ?? true;
     const COMING_SOON_MSG   = 'Psychologist bookings are coming soon.';
     let activeFilter    = '';
     let bookingTarget   = null;   // psychologist object being booked
