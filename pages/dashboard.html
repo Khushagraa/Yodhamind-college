@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Shared data layer — must load before any inline script -->
     <script src="/shared/storage.js"></script>
@@ -36,14 +37,25 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(180deg, var(--soft) 0%, var(--warm) 40%, #ffffff 100%);
-            color: var(--text);
-            overflow-x: hidden;
-            min-height: 100dvh;
-            padding-bottom: 80px;
-        }
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: linear-gradient(180deg, var(--soft) 0%, var(--warm) 40%, #ffffff 100%);
+    color: var(--text);
+    overflow-x: hidden;
+    min-height: 100dvh;
+    padding-bottom: 80px;
+}
+
+body.auth-guard {
+    opacity: 0;
+    pointer-events: none;
+}
+
+body.auth-ready {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.18s ease;
+}
 
         /* =====================================================
            NAV  — matches games.html pattern exactly
@@ -589,7 +601,7 @@
 
     </style>
 </head>
-<body>
+<body class="auth-guard">
 
     <!-- ═══════════════ NAV ═══════════════ -->
     <nav id="navbar">
@@ -906,6 +918,29 @@
     ═══════════════════════════════════════════ -->
     <script>
     'use strict';
+    const SB_URL = 'https://qbrdfnhksqoaagstvdzk.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFicmRmbmhrc3FvYWFnc3R2ZHprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3ODc5NDcsImV4cCI6MjA4ODM2Mzk0N30.GHhXkO63AMUrRSUHW9GtjD27AjBDZ1PIsfeBWRgNqgQ';
+    const sb = window.supabase.createClient(SB_URL, SB_KEY);
+
+    function go(u) { window.location.href = u; }
+
+    (async () => {
+        try {
+            const { data: { session } } = await sb.auth.getSession();
+            if (!session) return go('student_auth.html');
+            const { data: u } = await sb.from('users').select('role').eq('id', session.user.id).single();
+            if (!u || u.role !== 'student') {
+                await sb.auth.signOut();
+                return go('student_auth.html');
+            }
+            document.body.classList.remove('auth-guard');
+            document.body.classList.add('auth-ready');
+            sb.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT') go('student_auth.html'); });
+        } catch (err) {
+            console.error('Auth guard failed', err);
+            go('student_auth.html');
+        }
+    })();
 
     /* ──────────────────────────────────────────
        NAV SHADOW ON SCROLL

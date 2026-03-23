@@ -90,6 +90,7 @@
             background: none; transition: all 0.2s; position: relative;
         }
         .tab-btn.active { background: var(--primary); color: white; }
+        .tab-btn[disabled] { opacity: 0.55; cursor: not-allowed; }
         .tab-btn .badge {
             position: absolute; top: 4px; right: 6px;
             background: #EF4444; color: white;
@@ -466,6 +467,25 @@
         }
         .psych-card { animation: fadeSlideUp 0.35s ease both; }
 
+        .coming-soon-card {
+            border: 1.5px dashed rgba(0,0,0,0.1);
+            background: #F8FAFC;
+            border-radius: 20px;
+            padding: 26px;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+        }
+        .coming-soon-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .coming-soon-card p {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+
     </style>
 </head>
 <body>
@@ -758,11 +778,33 @@
     /* ──────────────────────────────────────────
        STATE
     ────────────────────────────────────────── */
+    const BOOKINGS_DISABLED = true;
+    const COMING_SOON_MSG   = 'Psychologist bookings are coming soon.';
     let activeFilter    = '';
     let bookingTarget   = null;   // psychologist object being booked
     let selectedDate    = null;
     let selectedTime    = null;
     let selectedSession = 'chat';
+
+    function showComingSoonToast() { showToast(COMING_SOON_MSG); }
+
+    function renderComingSoon() {
+        const message = `
+            <div class="coming-soon-card">
+                <div style="font-size:2rem;margin-bottom:10px;">⏳</div>
+                <h3>Psychologist bookings are coming soon</h3>
+                <p>We&rsquo;re polishing the experience. Please check back shortly.</p>
+            </div>
+        `;
+        const browse = document.getElementById('tabContentBrowse');
+        const mine   = document.getElementById('tabContentMine');
+        if (browse) browse.innerHTML = message;
+        if (mine) mine.innerHTML     = message;
+        const tabBrowse = document.getElementById('tabBrowse');
+        const tabMine   = document.getElementById('tabMine');
+        if (tabBrowse) tabBrowse.setAttribute('disabled', 'disabled');
+        if (tabMine)   tabMine.setAttribute('disabled', 'disabled');
+    }
 
     /* ──────────────────────────────────────────
        NAV SHADOW
@@ -776,6 +818,7 @@
        TABS
     ────────────────────────────────────────── */
     function showTab(tab) {
+        if (BOOKINGS_DISABLED) { showComingSoonToast(); return; }
         document.getElementById('tabContentBrowse').style.display = tab === 'browse' ? '' : 'none';
         document.getElementById('tabContentMine').style.display   = tab === 'mine'   ? '' : 'none';
         document.getElementById('tabBrowse').classList.toggle('active', tab === 'browse');
@@ -787,6 +830,7 @@
        FILTER
     ────────────────────────────────────────── */
     function setFilter(btn, spec) {
+        if (BOOKINGS_DISABLED) { showComingSoonToast(); return; }
         document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
         activeFilter = spec;
@@ -797,6 +841,7 @@
        RENDER PSYCHOLOGIST GRID
     ────────────────────────────────────────── */
     function renderGrid() {
+        if (BOOKINGS_DISABLED) { renderComingSoon(); return; }
         const grid = document.getElementById('psychGrid');
         const list = activeFilter
             ? PSYCHOLOGISTS.filter(p => p.tags.includes(activeFilter))
@@ -856,6 +901,7 @@
        PROFILE MODAL
     ────────────────────────────────────────── */
     function openProfile(id) {
+        if (BOOKINGS_DISABLED) { showComingSoonToast(); return; }
         const p = PSYCHOLOGISTS.find(x => x.id === id);
         if (!p) return;
 
@@ -931,6 +977,7 @@
        BOOKING MODAL
     ────────────────────────────────────────── */
     function openBookingModal(id) {
+        if (BOOKINGS_DISABLED) { showComingSoonToast(); return; }
         bookingTarget   = PSYCHOLOGISTS.find(p => p.id === id);
         if (!bookingTarget) return;
 
@@ -1002,6 +1049,7 @@
        SUBMIT BOOKING
     ────────────────────────────────────────── */
     function submitBooking() {
+        if (BOOKINGS_DISABLED) { showComingSoonToast(); return; }
         if (!selectedDate) { showToast('Please select a date'); return; }
         if (!selectedTime) { showToast('Please select a time'); return; }
 
@@ -1066,6 +1114,19 @@
        MY BOOKINGS
     ────────────────────────────────────────── */
     function renderMyBookings() {
+        if (BOOKINGS_DISABLED) {
+            const list = document.getElementById('myBookingsList');
+            if (list) {
+                list.innerHTML = `
+                    <div class="coming-soon-card">
+                        <div style="font-size:2rem;margin-bottom:10px;">⏳</div>
+                        <h3>Bookings are paused</h3>
+                        <p>${COMING_SOON_MSG}</p>
+                    </div>
+                `;
+            }
+            return;
+        }
         const list = document.getElementById('myBookingsList');
         const all  = YM.get('ym_student_bookings', []);
 
@@ -1133,6 +1194,11 @@
     }
 
     function updatePendingBadge() {
+        if (BOOKINGS_DISABLED) {
+            const badge = document.getElementById('pendingBadge');
+            if (badge) badge.style.display = 'none';
+            return;
+        }
         const all     = YM.get('ym_student_bookings', []);
         const pending = all.filter(b => b.status === 'pending').length;
         const badge   = document.getElementById('pendingBadge');
@@ -1173,6 +1239,10 @@
        INIT
     ────────────────────────────────────────── */
     document.addEventListener('DOMContentLoaded', () => {
+        if (BOOKINGS_DISABLED) {
+            renderComingSoon();
+            return;
+        }
         renderGrid();
         updatePendingBadge();
     });
